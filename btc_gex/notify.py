@@ -26,7 +26,7 @@ def _format_usd(value: float) -> str:
 def format_telegram_caption(snapshot: GexSnapshot) -> str:
     flip = f"{snapshot.gamma_flip:,.0f}" if snapshot.gamma_flip else "n/a"
     return (
-        f"<b>BTC GEX</b> (Deribit)\n"
+        f"BTC GEX (Deribit)\n"
         f"UTC {snapshot.as_of.strftime('%Y-%m-%d %H:%M')}\n"
         f"Spot ${snapshot.spot:,.0f}\n"
         f"Net GEX {_format_usd(snapshot.net_gex)}\n"
@@ -52,13 +52,16 @@ def send_telegram_message(
     url = TELEGRAM_API.format(token=token, method="sendMessage")
     response = requests.post(
         url,
-        json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
+        json={"chat_id": chat_id, "text": text},
         timeout=30,
     )
-    response.raise_for_status()
     payload = response.json()
-    if not payload.get("ok"):
-        raise RuntimeError(f"Telegram API error: {payload}")
+    if not response.ok or not payload.get("ok"):
+        description = payload.get("description", response.text)
+        raise RuntimeError(
+            f"Telegram sendMessage failed ({response.status_code}): {description}. "
+            "Check TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, and that you messaged the bot first."
+        )
 
 
 def send_telegram_photo(
@@ -83,11 +86,14 @@ def send_telegram_photo(
     with image_path.open("rb") as image_file:
         response = requests.post(
             url,
-            data={"chat_id": chat_id, "caption": caption, "parse_mode": "HTML"},
+            data={"chat_id": chat_id, "caption": caption},
             files={"photo": image_file},
             timeout=60,
         )
-    response.raise_for_status()
     payload = response.json()
-    if not payload.get("ok"):
-        raise RuntimeError(f"Telegram API error: {payload}")
+    if not response.ok or not payload.get("ok"):
+        description = payload.get("description", response.text)
+        raise RuntimeError(
+            f"Telegram sendPhoto failed ({response.status_code}): {description}. "
+            "Check TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, and that you messaged the bot first."
+        )

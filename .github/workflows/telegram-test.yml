@@ -1,0 +1,39 @@
+name: Telegram connection test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - run: pip install requests
+
+      - name: Check secrets exist
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "::error::Missing TELEGRAM_BOT_TOKEN in Settings → Secrets → Actions"
+            exit 1
+          fi
+          if [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::error::Missing TELEGRAM_CHAT_ID in Settings → Secrets → Actions"
+            exit 1
+          fi
+          echo "Secrets are set (values hidden)."
+
+      - name: Send test message to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/test_telegram.py

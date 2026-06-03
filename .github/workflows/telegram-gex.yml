@@ -21,9 +21,27 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate heatmap and send to Telegram
+      - name: Check Telegram secrets are configured
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "::error::Missing secret TELEGRAM_BOT_TOKEN (Settings → Secrets → Actions)"
+            exit 1
+          fi
+          if [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::error::Missing secret TELEGRAM_CHAT_ID (numeric chat id from getUpdates)"
+            exit 1
+          fi
+
+      - name: Fetch data, render heatmap, send to Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MPLBACKEND: Agg
-        run: python scripts/push_telegram.py
+          MPLCONFIGDIR: ${{ github.workspace }}/.matplotlib
+        run: |
+          set -e
+          python scripts/push_telegram.py
+          echo "All steps finished OK."
