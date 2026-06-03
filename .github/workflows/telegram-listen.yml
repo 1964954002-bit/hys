@@ -9,12 +9,14 @@ on:
 jobs:
   listen:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     outputs:
       push: ${{ steps.listen.outputs.push }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -22,7 +24,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Restore Telegram poll offset
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .cache/telegram_update_offset
           key: telegram-update-offset-v1
@@ -40,4 +42,5 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MPLBACKEND: Agg
         run: python scripts/push_telegram.py
