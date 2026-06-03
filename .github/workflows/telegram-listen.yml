@@ -1,0 +1,43 @@
+name: Telegram on-demand
+
+on:
+  schedule:
+    # Poll for "发图" etc. GitHub may delay 1–5 minutes on free tier.
+    - cron: "*/3 * * * *"
+  workflow_dispatch:
+
+jobs:
+  listen:
+    runs-on: ubuntu-latest
+    outputs:
+      push: ${{ steps.listen.outputs.push }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore Telegram poll offset
+        uses: actions/cache@v4
+        with:
+          path: .cache/telegram_update_offset
+          key: telegram-update-offset-v1
+
+      - name: Poll Telegram for chart command
+        id: listen
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_OFFSET_FILE: .cache/telegram_update_offset
+        run: python scripts/telegram_listen.py
+
+      - name: Generate heatmap and send to Telegram
+        if: steps.listen.outputs.push == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/push_telegram.py
