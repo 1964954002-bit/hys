@@ -2,8 +2,10 @@ name: Telegram GEX push
 
 on:
   schedule:
-    # Every 4 hours (UTC). GitHub may start a few minutes late.
-    - cron: "0 */4 * * *"
+    # Every 2 hours at :00 US Eastern (New York): 0, 2, 4, …, 22 ET.
+    # GitHub free tier may delay runs when the repo is inactive.
+    - cron: "0 0,2,4,6,8,10,12,14,16,18,20,22 * * *"
+      timezone: America/New_York
   workflow_dispatch:
 
 jobs:

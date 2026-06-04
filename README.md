@@ -32,7 +32,7 @@ python main.py --heatmap --output output/my_heatmap.png
 
 Suggested cadence: 2–4 times per day. No API key required.
 
-## Telegram push every 4 hours (GitHub, laptop can sleep)
+## Telegram push every 2 hours (GitHub, laptop can sleep)
 
 GitHub runs the script in the cloud on a schedule. Your Mac does not need to stay on.
 
@@ -79,7 +79,9 @@ On the repo page: **Settings** → **Secrets and variables** → **Actions** →
 
 **Actions** tab → **Telegram GEX push** → **Run workflow** → **Run workflow**.
 
-In about 1–2 minutes you should get the heatmap on Telegram. After that, it runs automatically every 4 hours (UTC).
+In about 1–2 minutes you should get the heatmap on Telegram. After that, it runs automatically **every 2 hours** at **:00 US Eastern (New York)** — 0:00, 2:00, 4:00, …, 22:00 ET.
+
+GitHub may start scheduled runs **late** (sometimes 15–60+ minutes) on free accounts when the repo is quiet. Use **Run workflow** anytime, or send `发图` in Telegram for on-demand charts.
 
 ### On-demand: send「发图」in Telegram
 
